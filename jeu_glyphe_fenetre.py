@@ -8,12 +8,32 @@ def game():
     value = random.randint(MIN_VALUE, MAX_VALUE)
     bonneFortune = random.randint(1, 150) + 500
     mauvaiseFortune = random.randint(25, 200)
+
     MAX_ATTEMPTS = 12
     punition = ["-10 à la force !", "-10 à l'agilité !", "-10 à l'endurance !",
                 "-10 à la force mentale !", "-10 au CC !", "-10 au CT", "-10 à la dextérité !",
                 "une boule de feu 2d100 dégâts !", "-10 à la chance !", "-1d100 Po"]
     attempts = 0
-    
+
+    # Liste des panoplies et items
+    list_panoplie = [
+        "du Barde des étoiles", 
+        "du Sorcier des Bulles", "du Chevalier des Nuages", "du Voleur de Rêves", "du Druide des Champignons",
+        "du Guerrier des Étoiles Filantes", "de l'Archer des Arc-en-Ciel", "du Moine des Éclairs", 
+        "du Nécromancien des Papillons", "du Chevalier du temps", "du Mage des Éclats de Cristal", 
+        "du Voleur de Lune", "du Druide des Fleurs", "du Guerrier des Flammes Bleues", "de l'Archer de lumière",
+        "du Moine de Magma", "du Nécromancien des Ombres Dansantes", "du Paladin des Tempêtes", 
+        "de l'Assassin des Brumes", "de l'éclat céleste", "des ailes de lumière", "de l'armure Séraphique", 
+        "de la fureur infernale", "de l'armure du Chaos", "du pacte sombre", "de la bénédiction Sacrée",
+        "de la lumière du sanctuaire", "du secret hermétique", "des arcane de la transmutation", 
+        "de la panoplie du négociant", "de l'ensemble du courtier"
+    ]
+    list_items = ["le casque", "la cuirasse", "les bottes", "le gant", "la cape", "l'arme"]
+
+    # Sélection des récompenses
+    selection_panoplie = random.choice(list_panoplie)
+    item = random.choice(list_items)
+
     # Phrase et localisation
     phrase_enigme = simpledialog.askstring("Mot mystère", "Tapez votre mot à deviner (8 caractères max) :")
     localisation = simpledialog.askstring("Localisation", "Écrivez la localisation de l'objet :")
@@ -47,7 +67,9 @@ def game():
             # Résultat du mot mystère
             if affichage == phrase_enigme:
                 messagebox.showinfo("Félicitations", f"Vous avez découvert le mot : {phrase_enigme}\n"
-                                                     f"Vous recevez une récompense !")
+                                                     f"Vous recevez {item} de la panoplie {selection_panoplie}.\n"
+                                                     f"Localisation : {localisation}"
+                                                     f"Vous recevez {tentative_restante + 1} gemmes bleu !")
             else:
                 messagebox.showinfo("Échec", f"Vous n'avez pas deviné le mot : {phrase_enigme}")
             break
