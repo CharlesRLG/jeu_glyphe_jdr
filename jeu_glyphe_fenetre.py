@@ -56,20 +56,21 @@ def game():
             # Deviner les lettres du mot
             while tentative_restante > 0 and affichage != phrase_enigme:
                 affichage = "".join([l if l in lettre_trouve else "-" for l in phrase_enigme])
-                tentative_restante -= 1
                 lettre = simpledialog.askstring("Devinez une lettre", f"Mot : {affichage}\nIl vous reste {tentative_restante} chances.")
                 if lettre in phrase_enigme:
                     lettre_trouve += lettre
                     messagebox.showinfo("Bravo", f"La lettre '{lettre}' est correcte !")
                 else:
+                    tentative_restante -= 1
                     messagebox.showwarning("Erreur", f"La lettre '{lettre}' n'est pas dans le mot.")
+
             
             # Résultat du mot mystère
             if affichage == phrase_enigme:
                 messagebox.showinfo("Félicitations", f"Vous avez découvert le mot : {phrase_enigme}\n"
                                                      f"Vous recevez {item} de la panoplie {selection_panoplie}.\n"
-                                                     f"Localisation : {localisation}"
-                                                     f"Vous recevez {tentative_restante + 1} gemmes bleu !")
+                                                     f"Localisation : {localisation} \n"
+                                                     f"Vous recevez {tentative_restante} gemmes bleu !")
             else:
                 messagebox.showinfo("Échec", f"Vous n'avez pas deviné le mot : {phrase_enigme}")
             break
@@ -91,3 +92,4 @@ def game():
 root = tk.Tk()
 root.withdraw()  # Masquer la fenêtre principale
 game()
+
