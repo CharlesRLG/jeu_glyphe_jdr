@@ -43,7 +43,7 @@ def game():
     lettre_trouve = ""
     
     # Boucle de jeu
-    for attempt in range(MAX_ATTEMPTS):
+    for attempts in range(MAX_ATTEMPTS):
         answer = simpledialog.askinteger("Tentative", f"Un Glyphe apparaît avec des chiffres de 1 à 100.\nEssais restants : {MAX_ATTEMPTS - attempts}")
         if not answer:
             break
@@ -53,16 +53,21 @@ def game():
             messagebox.showinfo("Victoire", f"Un coffre apparaît et s'ouvre !\nVous trouvez {bonneFortune} Pièces d'or !!!\n"
                                             f"Vous pouvez deviner {tentative_restante} caractères.")
             
+
             # Deviner les lettres du mot
-            while tentative_restante > 0 and affichage != phrase_enigme:
+            while tentative_restante > 0:
                 affichage = "".join([l if l in lettre_trouve else "-" for l in phrase_enigme])
+                if affichage == phrase_enigme:  # Vérifie si le mot entier est deviné
+                    break
                 lettre = simpledialog.askstring("Devinez une lettre", f"Mot : {affichage}\nIl vous reste {tentative_restante} chances.")
-                if lettre in phrase_enigme:
+                if lettre and lettre in phrase_enigme:
                     lettre_trouve += lettre
                     messagebox.showinfo("Bravo", f"La lettre '{lettre}' est correcte !")
                 else:
                     tentative_restante -= 1
-                    messagebox.showwarning("Erreur", f"La lettre '{lettre}' n'est pas dans le mot.")
+                    if lettre:  # Vérifie que `lettre` n'est pas vide
+                        messagebox.showwarning("Erreur", f"La lettre '{lettre}' n'est pas dans le mot.")
+
 
             
             # Résultat du mot mystère
