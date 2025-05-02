@@ -6,6 +6,10 @@ class JeuMystere:
         self.root = root
         self.root.geometry("800x600")
         self.root.title("Le Glyphe de Rand-Hôm")
+        
+        # Historique
+        self.historique_label = tk.Label(root, text="", font=("Arial", 12), justify="left", anchor="w")
+        self.historique_label.pack(pady=10, fill="both", padx=20)
 
         # Initialisation
         self.MIN_VALUE, self.MAX_VALUE = 0, 100
@@ -35,10 +39,14 @@ class JeuMystere:
         self.item = random.choice(self.list_items)
 
         self.attempts = 0
-        self.etape = "mot"  # "mot", "localisation", "jeu", "lettres"
+        self.etape = "mot"
         self.lettres_restantes = 0
         self.lettres_trouvees = ""
         
+        self.historique_nombres = []
+        self.historique_couleurs = []  # Stocke la couleur associée à chaque nombre
+        self.lettres_essayees = []
+
         # Interface
         self.label = tk.Label(root, text="Tapez le mot à deviner (8 lettres max)", font=("Arial", 16))
         self.label.pack(pady=20)
@@ -60,11 +68,12 @@ class JeuMystere:
             if not texte or len(texte) > 8:
                 self.resultat.config(text="Mot invalide. Veuillez entrer un mot de 8 caractères max.")
                 return
-            self.phrase_enigme = texte
+            self.phrase_enigme = texte.lower()
             self.affichage = "-" * len(self.phrase_enigme)
             self.etape = "localisation"
             self.label.config(text="Écrivez la localisation de l'objet :")
             self.resultat.config(text="")
+
         elif self.etape == "localisation":
             if not texte:
                 self.resultat.config(text="Veuillez entrer une localisation.")
@@ -73,6 +82,7 @@ class JeuMystere:
             self.etape = "jeu"
             self.label.config(text=f"Trouvez le nombre entre {self.MIN_VALUE} et {self.MAX_VALUE}")
             self.resultat.config(text=f"Vous avez {self.MAX_ATTEMPTS} essais.\nEntrez un nombre :")
+
         elif self.etape == "jeu":
             try:
                 guess = int(texte)
@@ -80,27 +90,44 @@ class JeuMystere:
                 self.resultat.config(text="Veuillez entrer un nombre valide.")
                 return
 
+            couleur = ""
             if guess == self.value:
                 self.lettres_restantes = self.MAX_ATTEMPTS - self.attempts
                 self.etape = "lettres"
                 self.label.config(text="Nombre trouvé ! Devinez les lettres du mot :")
-                self.resultat.config(text=f"Vous avez trouvé {self.bonneFortune} pièces d'or !\n"
-                                          f"Devinez le mot. Il vous reste {self.lettres_restantes} essais.")
+                self.resultat.config(fg="green", text=f"Vous avez trouvé {self.bonneFortune} pièces d'or !\n"
+                                                      f"Devinez le mot. Il vous reste {self.lettres_restantes} essais.")
                 self.update_affichage()
             else:
                 self.attempts += 1
                 if self.attempts >= self.MAX_ATTEMPTS:
                     self.fin_de_jeu(False)
                     return
-                indice = "bleue et descend." if guess > self.value else "rouge et monte."
+                if guess < self.value:
+                    couleur = "red"
+                    indice = "rouge et monte."
+                else:
+                    couleur = "blue"
+                    indice = "bleue et descend."
+
                 punition = random.choice(self.punition)
-                self.resultat.config(text=f"Mauvais numéro ! La lumière est {indice}\nPunition : {punition}\n"
-                                          f"Essais restants : {self.MAX_ATTEMPTS - self.attempts}")
+                self.resultat.config(fg=couleur, text=f"Mauvais numéro ! La lumière est {indice}\n"
+                                                      f"Punition : {punition}\n"
+                                                      f"Essais restants : {self.MAX_ATTEMPTS - self.attempts}")
+
+            self.historique_nombres.append(guess)
+            self.historique_couleurs.append(couleur)
+            self.update_historique()
+
         elif self.etape == "lettres":
             if not texte or len(texte) != 1:
                 self.resultat.config(text="Veuillez entrer une seule lettre.")
                 return
             lettre = texte.lower()
+            if lettre not in self.lettres_essayees:
+                self.lettres_essayees.append(lettre)
+            self.update_historique()
+
             if lettre in self.phrase_enigme and lettre not in self.lettres_trouvees:
                 self.lettres_trouvees += lettre
                 self.resultat.config(text=f"Bonne lettre ! Il vous reste {self.lettres_restantes} essais.")
@@ -119,9 +146,20 @@ class JeuMystere:
         self.affichage = "".join([l if l in self.lettres_trouvees else "-" for l in self.phrase_enigme])
         self.label.config(text=f"Mot : {self.affichage}")
 
+    def update_historique(self):
+        texte = "Nombres essayés :\n"
+        for i, guess in enumerate(self.historique_nombres):
+            couleur = self.historique_couleurs[i]
+            couleur_nom = " (plus haut)" if couleur == "red" else " (plus bas)" if couleur == "blue" else ""
+            texte += f"• {guess}{couleur_nom}\n"
+        lettres = ", ".join(self.lettres_essayees) if self.lettres_essayees else "Aucune"
+        texte += f"\nLettres proposées : {lettres}"
+        self.historique_label.config(text=texte)
+
     def fin_de_jeu(self, victoire):
         if victoire:
             self.resultat.config(
+                fg="green",
                 text=f"Bravo ! Vous avez réussi l'épreuve de Rand-Ohm !\n"
                      f"Vous recevez : {self.item} de la panoplie {self.selection_panoplie}\n"
                      f"Localisation : {self.localisation}\n"
@@ -129,12 +167,14 @@ class JeuMystere:
             )
         else:
             self.resultat.config(
+                fg="black",
                 text=f"Échec ! Rand-Ohm a encore gagné !\n"
                      f"Vous trouvez seulement {self.mauvaiseFortune} pièces de cuivre..."
             )
         self.label.config(text="Fin de la partie.")
         self.entry.config(state="disabled")
         self.bouton.config(state="disabled")
+
 
 # Lancer le jeu
 root = tk.Tk()
